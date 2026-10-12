@@ -73,6 +73,9 @@ footer.site{background:#111614;color:#aab5ad;font-size:14px;text-align:center;pa
 .also{background:var(--wood-soft)}.also .wrap{display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-top:30px;padding-bottom:30px}
 .also p{margin:0;max-width:44em}.also h3{margin-bottom:.3em}
 @media (max-width:860px){.why .points{grid-template-columns:minmax(0,1fr)}}
+.story{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:36px;align-items:center}
+.story video{display:block;width:100%;height:auto;border-radius:12px;border:3px solid var(--wood);background:#000}
+@media (max-width:860px){.story{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -98,8 +101,11 @@ footer.site{background:#111614;color:#aab5ad;font-size:14px;text-align:center;pa
 
 <section class="why" id="why"><div class="wrap">
   <div class="eyebrow">Why we do this</div>
+  <div class="story"><div>
   <h2>Wood is precious, even where there's plenty of it.</h2>
   <p class="lead">Every new pallet is built from fresh-cut lumber, and many are thrown out after a single trip. We think that's a waste. So we take pallets that still have years in them, fix what's broken, and send them back out.</p>
+  </div>
+  <video controls preload="metadata" playsinline poster="img/story-poster.jpg" width="1280" height="720"><source src="video/jdl-story.mp4" type="video/mp4">Your browser cannot play this video.</video></div>
   <div class="points">
     <div><h3>Reuse first</h3><p>A sound pallet goes straight back into service. No new lumber, nothing thrown away.</p></div>
     <div><h3>Repair before replace</h3><p>One cracked board shouldn't scrap a whole pallet. We replace the board and keep the rest working.</p></div>
