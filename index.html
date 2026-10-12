@@ -172,9 +172,11 @@ footer.site{background:#111614;color:#aab5ad;font-size:14px;text-align:center;pa
 <footer class="site"><div class="wrap">JDL Pallet Recycling · 2505 Ferrier St, Winnipeg, MB R2V 4P4 · 431-279-0220 · jdlpalletrecycling@outlook.com</div></footer>
 <div class="callbar"><a href="tel:+14312790220">Call</a><a href="#contact">Get a price</a></div>
 <script>
-// Quote form. FORM_KEY is the public access key of the form-to-email service; while it is empty the page stays a preview and sends nothing.
+// Quote form. Each request goes two ways: by email through the form service (FORM_KEY is its public access key) and to Telegram through our relay.
+// The request counts as sent if either one gets through. With FORM_KEY empty the page stays a preview and sends nothing.
 (function () {
   var FORM_ENDPOINT = 'https://api.web3forms.com/submit', FORM_KEY = 'f5ba5486-293a-441f-8e4f-3398f2000e14';
+  var RELAY_ENDPOINT = 'https://jdl-quote-relay.jdl-quote-relay.workers.dev';
   var form = document.getElementById('quote'), status = form.querySelector('.status'), button = form.querySelector('button');
   function say(text, kind) { status.textContent = text; status.className = 'status' + (kind ? ' ' + kind : ''); }
   form.addEventListener('submit', function (event) {
@@ -191,16 +193,18 @@ footer.site{background:#111614;color:#aab5ad;font-size:14px;text-align:center;pa
     if (data.botcheck) { say('Thanks. We will call you back.', 'ok'); form.reset(); return; }   // a filled hidden box means a bot: pretend, send nothing
     if (!FORM_KEY) { say('This is a preview: the form is not connected yet.'); return; }
     delete data.botcheck;
-    data.access_key = FORM_KEY; data.subject = 'Quote request: ' + data.need + (data.quantity ? ' x ' + data.quantity : ''); data.from_name = 'JDL website';
+    var email = Object.assign({access_key: FORM_KEY, subject: 'Quote request: ' + data.need + (data.quantity ? ' x ' + data.quantity : ''), from_name: 'JDL website'}, data);
+    function post(url, body) {
+      return fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json', 'Accept': 'application/json'}, body: JSON.stringify(body)})
+        .then(function (response) { return response.json().then(function (answer) { return response.ok && answer.success === true; }); })
+        .catch(function () { return false; });
+    }
     button.disabled = true; say('Sending…');
-    fetch(FORM_ENDPOINT, {method: 'POST', headers: {'Content-Type': 'application/json', 'Accept': 'application/json'}, body: JSON.stringify(data)})
-      .then(function (response) { return response.json().then(function (body) { return response.ok && body.success; }); })
-      .then(function (sent) {
-        button.disabled = false;
-        if (sent) { form.reset(); say('Thanks. Your request is in, and we will call you back.', 'ok'); }
-        else say('Sorry, that did not send. Please call 431-279-0220.', 'bad');
-      })
-      .catch(function () { button.disabled = false; say('Sorry, that did not send. Please call 431-279-0220.', 'bad'); });
+    Promise.all([post(FORM_ENDPOINT, email), RELAY_ENDPOINT ? post(RELAY_ENDPOINT, data) : false]).then(function (sent) {
+      button.disabled = false;
+      if (sent[0] || sent[1]) { form.reset(); say('Thanks. Your request is in, and we will call you back.', 'ok'); }
+      else say('Sorry, that did not send. Please call 431-279-0220.', 'bad');
+    });
   });
 })();
 </script>
