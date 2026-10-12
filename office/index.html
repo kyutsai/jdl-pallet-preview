@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>JDL Office</title>
+<link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1b1e22;--soft:#59606a;--bg:#f4f1ea;--card:#fff;--line:#ddd6c6;--green:#1d4a31;--deep:#12301f;--amber:#f5b301;--amber-soft:#f6e7c6;--red:#b3261e;--ok:#17805a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Helvetica Neue",Arial,sans-serif;padding-bottom:84px}
+h1,h2,h3{font-family:Oswald,"Arial Narrow",sans-serif;text-transform:uppercase;letter-spacing:.01em;line-height:1.15;margin:0}
+button,input,select,textarea{font:inherit}
+.wrap{max-width:860px;margin:auto;padding:0 16px}
+.top{background:var(--deep);color:#fff;position:sticky;top:0;z-index:5}
+.top .wrap{display:flex;align-items:center;gap:10px;padding-top:11px;padding-bottom:11px}
+.top h1{font-size:1.2rem;flex:1}.top h1 small{display:block;font:600 11px Arial,sans-serif;letter-spacing:.1em;color:#a9d99a}
+.badge{background:var(--amber);color:var(--ink);font:700 12px Oswald,sans-serif;letter-spacing:.08em;padding:3px 9px;border-radius:999px}
+.link{background:none;border:0;color:#cfdcd3;text-decoration:underline;cursor:pointer;padding:6px}
+main{padding-top:18px}
+.view h2{font-size:1.35rem;margin:6px 0 4px}.hint{color:var(--soft);margin:0 0 14px;font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.card.s-New{border-left-color:var(--amber)}.card.s-Called{border-left-color:#7a8f9f}.card.s-Quoted{border-left-color:#2c7fb3}.card.s-Won{border-left-color:var(--ok)}.card.s-Lost{border-left-color:#a3a3a3}
+.card header{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.card h3{font-size:1.12rem;flex:1;min-width:0;overflow-wrap:anywhere}
+.tag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:#eef1ee;color:var(--soft);white-space:nowrap}
+.tag.due{background:#fde3e0;color:var(--red)}.tag.today{background:var(--amber-soft);color:#7a5200}
+.what{margin:4px 0 0;font-weight:700}.msg{margin:4px 0 0;color:var(--soft);overflow-wrap:anywhere}.meta{margin:6px 0 0;font-size:14px;color:var(--soft)}
+.meta a{color:var(--green);font-weight:700}
+.status{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 4px}
+.status button{flex:1 1 auto;min-width:64px;padding:10px 8px;border:2px solid var(--line);background:#fff;border-radius:9px;font-weight:700;cursor:pointer;color:var(--ink)}
+.status button.on{background:var(--green);border-color:var(--green);color:#fff}
+.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px}
+label{display:block;font-size:12px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:.05em}
+label input,label select,label textarea{display:block;width:100%;margin-top:3px;padding:9px 10px;border:1px solid #c9c2b2;border-radius:8px;background:#fff;color:var(--ink);text-transform:none;letter-spacing:0;font-weight:400}
+textarea{min-height:58px}.notes{margin-top:8px}
+.saved{display:block;min-height:18px;font-size:13px;color:var(--ok);margin-top:4px}.saved.bad{color:var(--red)}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.filters button{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:700}
+.filters button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.search{width:100%;padding:10px 12px;border:1px solid #c9c2b2;border-radius:9px;margin-bottom:10px}
+.day{margin:18px 0 8px;font:700 1rem Oswald,sans-serif;text-transform:uppercase;color:var(--green)}
+.row{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.row strong{flex:1;min-width:0;overflow-wrap:anywhere}.row span{color:var(--soft);font-size:14px}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0 18px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}
+.tile b{display:block;font:700 1.55rem Oswald,sans-serif}.tile span{font-size:13px;color:var(--soft)}
+.tile.big{background:var(--deep);color:#fff;border-color:var(--deep)}.tile.big span{color:#cfdcd3}.tile.big b{color:var(--amber)}
+.scroll{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:420px}th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--soft)}th:first-child,td:first-child{text-align:left}tr:last-child td{border-bottom:0}
+.empty{color:var(--soft);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:22px;text-align:center}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);z-index:6}
+nav.tabs button{background:none;border:0;padding:12px 4px 14px;font:700 13px Oswald,sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--soft);cursor:pointer;border-top:4px solid transparent}
+nav.tabs button.on{color:var(--green);border-top-color:var(--amber)}
+nav.tabs button i{display:block;font:700 1.15rem Oswald,sans-serif;font-style:normal;color:inherit}
+.fab{position:fixed;right:16px;bottom:84px;background:var(--amber);color:var(--ink);border:0;border-radius:999px;padding:14px 20px;font-weight:800;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer;z-index:6}
+.btn{background:var(--green);color:#fff;border:0;border-radius:10px;padding:13px 18px;font-weight:800;cursor:pointer;width:100%}
+.btn.alt{background:#fff;color:var(--green);border:2px solid var(--green)}
+.gate{max-width:420px;margin:8vh auto 0;padding:0 16px}.gate .box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px}
+.gate h2{font-size:1.5rem;margin-bottom:6px}.gate p{color:var(--soft);margin:0 0 14px}.gate .or{text-align:center;color:var(--soft);margin:14px 0}
+.gate .keep{display:flex;gap:8px;align-items:center;margin:10px 0 14px;text-transform:none;letter-spacing:0;font-size:14px;font-weight:400}.gate .keep input{width:auto;margin:0}
+.err{color:var(--red);font-weight:700;min-height:20px;margin:8px 0 0}
+dialog{border:0;border-radius:14px;padding:0;width:min(520px,94vw)}dialog::backdrop{background:rgba(0,0,0,.5)}
+dialog form{padding:20px}dialog h2{font-size:1.3rem;margin-bottom:10px}dialog .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}dialog label{margin-top:10px}
+dialog .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+[hidden]{display:none!important}
+@media (max-width:560px){.fields{grid-template-columns:1fr 1fr}.fields label:first-child{grid-column:1/-1}.tiles{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap"><h1>JDL Office<small>Pallet Recycling · Winnipeg</small></h1><span class="badge" id="demoBadge" hidden>Demo</span><button class="link" id="leave" hidden>Sign out</button></div></div>
+
+<div class="gate" id="gate"><div class="box">
+  <h2>Sign in</h2><p>Enter the office passcode to see your requests and orders.</p>
+  <form id="signin"><label>Passcode<input id="pass" type="password" autocomplete="current-password" required></label>
+  <label class="keep"><input type="checkbox" id="keep"> Stay signed in on this device</label>
+  <button class="btn" type="submit">Open the office</button><p class="err" id="gateErr" role="alert"></p></form>
+  <p class="or">or</p><button class="btn alt" id="tryDemo" type="button">Look around with made-up customers</button>
+</div></div>
+
+<main class="wrap" id="app" hidden>
+  <section class="view" id="v-today"></section>
+  <section class="view" id="v-requests" hidden></section>
+  <section class="view" id="v-calendar" hidden></section>
+  <section class="view" id="v-report" hidden></section>
+</main>
+<button class="fab" id="add" hidden>+ Phone order</button>
+<nav class="tabs" id="tabs" hidden>
+  <button data-view="today" class="on"><i id="n-today">0</i>To do</button><button data-view="requests"><i id="n-requests">0</i>All orders</button>
+  <button data-view="calendar"><i id="n-calendar">0</i>Calendar</button><button data-view="report"><i>$</i>Sales</button>
+</nav>
+
+<dialog id="newOrder"><form method="dialog" id="orderForm">
+  <h2>Add a phone or walk-in order</h2>
+  <label>Customer name<input name="name" maxlength="80" required></label>
+  <label>Phone<input name="phone" type="tel" maxlength="24"></label>
+  <div class="two"><label>What they need<select name="need"><option>Recycled pallets</option><option>A custom size built</option><option>My pallets repaired</option><option>I have used pallets to pass on</option></select></label>
+  <label>How many<input name="quantity" inputmode="numeric" maxlength="12"></label></div>
+  <label>Size<select name="size"><option>48 x 40 (standard)</option><option>Mixed sizes</option><option>Other / not sure</option></select></label>
+  <label>Details<textarea name="message" maxlength="1500"></textarea></label>
+  <p class="err" id="orderErr" role="alert"></p>
+  <div class="acts"><button class="btn alt" type="button" id="cancelOrder">Cancel</button><button class="btn" type="submit" value="save">Save order</button></div>
+</form></dialog>
+
+<script>
+(function () {
+  var API = 'https://jdl-quote-relay.jdl-quote-relay.workers.dev/office/api';
+  var STATUSES = ['New', 'Called', 'Quoted', 'Won', 'Lost'], OPEN = ['New', 'Called', 'Quoted'];
+  var rows = [], demo = false, pass = '', view = 'today', filter = 'Open', query = '';
+  var $ = function (id) { return document.getElementById(id); };
+  var money = new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD', maximumFractionDigits: 0});
+  function esc(text) { return String(text == null ? '' : text).replace(/[&<>"']/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]; }); }
+  function day(offset) { var d = new Date(); d.setDate(d.getDate() + (offset || 0)); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function nice(date) { if (!date) return ''; var p = date.slice(0, 10).split('-'); return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('en-CA', {weekday: 'short', month: 'short', day: 'numeric'}); }
+
+  // Made-up customers for the demo. Nothing here is saved or sent anywhere.
+  function sample() {
+    var list = [
+      ['web', -34, 'Recycled pallets', '60', '48 x 40 (standard)', 'Prairie Feed Co', '204 555 0101', 'Need them by Friday', 'Won', 480, null, -30, 'Picked up, paid'],
+      ['manual', -21, 'Recycled pallets', '100', '48 x 40 (standard)', 'Henderson Farm', '204 555 0111', 'Phone order', 'Won', 1600, null, -18, 'Delivered'],
+      ['web', -23, 'A custom size built', '25', 'Other / not sure', 'Northgate Signs', '204 555 0102', '60 x 30, for sign panels', 'Won', 1250, null, -14, 'Repeat customer'],
+      ['web', -15, 'Recycled pallets', '40', '48 x 40 (standard)', 'Red River Movers', '204 555 0103', '', 'Lost', 300, null, null, 'Went with a cheaper quote'],
+      ['web', -10, 'Recycled pallets', '80', '48 x 40 (standard)', 'Lakeside Greenhouse', '204 555 0104', 'Monthly order if price is right', 'Quoted', 640, 1, null, 'Call back tomorrow'],
+      ['manual', -6, 'Recycled pallets', '12', '48 x 40 (standard)', 'Walk-in, Mr. Okafor', '204 555 0112', '', 'Won', 220, null, -6, 'Paid cash at the yard'],
+      ['web', -6, 'A custom size built', '40', 'Other / not sure', 'Keystone Millwork', '204 555 0105', '72 x 48 heavy duty', 'Quoted', 2100, 3, 9, 'Waiting on their manager'],
+      ['web', -3, 'My pallets repaired', '30', 'Mixed sizes', 'Portage Hardware', '204 555 0106', 'Broken boards, some cracked', 'Called', null, -1, null, 'Left a voicemail'],
+      ['manual', -3, 'A custom size built', '30', 'Other / not sure', 'City Print Shop', '204 555 0113', 'Skids for a new press', 'Quoted', 900, 0, 6, ''],
+      ['web', -1, 'Recycled pallets', '20', '48 x 40 (standard)', 'Maple Bakery Supply', '204 555 0107', '', 'New', null, null, null, ''],
+      ['web', 0, 'I have used pallets to pass on', '150', 'Mixed sizes', 'Summit Warehousing', '204 555 0108', 'Clearing out a dock', 'New', null, null, null, '']
+    ];
+    return list.map(function (r, i) { return {id: i + 1, kind: r[0], received: day(r[1]) + ' 09:' + String(10 + i * 3), need: r[2], quantity: r[3], size: r[4], name: r[5], phone: r[6], message: r[7],
+      status: r[8], amount: r[9], follow_up: r[10] == null ? null : day(r[10]), pickup: r[11] == null ? null : day(r[11]), notes: r[12]}; }).reverse();
+  }
+
+  function api(method, path, body) {
+    return fetch(API + path, {method: method, headers: {'Authorization': 'Bearer ' + pass, 'Content-Type': 'application/json'}, body: body ? JSON.stringify(body) : undefined})
+      .then(function (response) { return response.json().then(function (data) { return {status: response.status, data: data}; }); });
+  }
+  function load() { return demo ? Promise.resolve() : api('GET', '/requests').then(function (r) { if (r.status === 401) throw new Error('passcode'); if (!r.data.success) throw new Error('load'); rows = r.data.requests; }); }
+
+  function due(row) { return OPEN.indexOf(row.status) < 0 ? 9 : !row.follow_up ? 2 : row.follow_up < day() ? 0 : row.follow_up === day() ? 1 : 3; }
+  function card(row) {
+    var d = due(row), tag = d === 0 ? '<span class="tag due">Overdue: ' + esc(nice(row.follow_up)) + '</span>' : d === 1 ? '<span class="tag today">Call today</span>' : d === 3 ? '<span class="tag">Follow up ' + esc(nice(row.follow_up)) + '</span>' : d === 2 ? '<span class="tag today">No follow-up set</span>' : '';
+    return '<article class="card s-' + esc(row.status) + '" data-id="' + row.id + '"><header><h3>' + esc(row.name) + '</h3>' + tag + '<span class="tag">' + (row.kind === 'manual' ? 'Phone / walk-in' : 'Website') + '</span></header>' +
+      '<p class="what">' + esc(row.need) + (row.quantity ? ' × ' + esc(row.quantity) : '') + (row.size ? ' · ' + esc(row.size) : '') + '</p>' +
+      (row.message ? '<p class="msg">“' + esc(row.message) + '”</p>' : '') +
+      '<p class="meta">Received ' + esc(nice(row.received)) + (row.phone ? ' · <a href="tel:' + esc(row.phone.replace(/[^0-9+]/g, '')) + '">Call ' + esc(row.phone) + '</a>' : '') + '</p>' +
+      '<div class="status" role="group" aria-label="Status">' + STATUSES.map(function (s) { return '<button type="button" data-status="' + s + '"' + (s === row.status ? ' class="on" aria-pressed="true"' : '') + '>' + s + '</button>'; }).join('') + '</div>' +
+      '<div class="fields"><label>Quote ($)<input data-field="amount" type="number" min="0" step="1" inputmode="decimal" value="' + (row.amount == null ? '' : esc(row.amount)) + '"></label>' +
+      '<label>Follow up on<input data-field="follow_up" type="date" value="' + esc(row.follow_up || '') + '"></label>' +
+      '<label>Pickup / delivery<input data-field="pickup" type="date" value="' + esc(row.pickup || '') + '"></label></div>' +
+      '<label class="notes">Notes<textarea data-field="notes" maxlength="1500">' + esc(row.notes) + '</textarea></label><span class="saved" aria-live="polite"></span></article>';
+  }
+  function emptyBox(text) { return '<p class="empty">' + text + '</p>'; }
+
+  function render() {
+    var open = rows.filter(function (r) { return OPEN.indexOf(r.status) >= 0; });
+    var todo = open.slice().sort(function (a, b) { return due(a) - due(b) || String(a.follow_up || '').localeCompare(String(b.follow_up || '')) || b.id - a.id; });
+    var booked = rows.filter(function (r) { return r.pickup; }).sort(function (a, b) { return a.pickup.localeCompare(b.pickup); });
+    var upcoming = booked.filter(function (r) { return r.pickup >= day(); });
+    $('n-today').textContent = todo.filter(function (r) { return due(r) < 3; }).length; $('n-requests').textContent = rows.length; $('n-calendar').textContent = upcoming.length;
+
+    $('v-today').innerHTML = '<h2>To do</h2><p class="hint">Open requests, most urgent first. Tap a status as each one moves along.</p>' + (todo.length ? todo.map(card).join('') : emptyBox('Nothing open. New website requests will appear here.'));
+
+    var shown = rows.filter(function (r) { return (filter === 'All' || (filter === 'Open' ? OPEN.indexOf(r.status) >= 0 : r.status === filter)) && (!query || (r.name + ' ' + r.phone + ' ' + r.need).toLowerCase().indexOf(query) >= 0); });
+    $('v-requests').innerHTML = '<h2>All orders</h2><input class="search" id="search" type="search" placeholder="Search name or phone" value="' + esc(query) + '">' +
+      '<div class="filters">' + ['Open', 'Won', 'Lost', 'All'].map(function (f) { return '<button type="button" data-filter="' + f + '"' + (f === filter ? ' class="on"' : '') + '>' + f + '</button>'; }).join('') + '</div>' +
+      (shown.length ? shown.map(card).join('') : emptyBox('No orders match.'));
+
+    var groups = {}, past = booked.filter(function (r) { return r.pickup < day(); }).reverse();
+    upcoming.forEach(function (r) { (groups[r.pickup] = groups[r.pickup] || []).push(r); });
+    function line(r) { return '<div class="row"><strong>' + esc(r.name) + '</strong><span>' + esc(r.need) + (r.quantity ? ' × ' + esc(r.quantity) : '') + '</span><span>' + esc(r.status) + '</span>' + (r.phone ? '<span><a href="tel:' + esc(r.phone.replace(/[^0-9+]/g, '')) + '">' + esc(r.phone) + '</a></span>' : '') + '</div>'; }
+    $('v-calendar').innerHTML = '<h2>Calendar</h2><p class="hint">Booked pickups and deliveries. Set the date on an order and it shows up here.</p>' +
+      (upcoming.length ? Object.keys(groups).map(function (d) { return '<p class="day">' + (d === day() ? 'Today · ' : '') + esc(nice(d)) + '</p>' + groups[d].map(line).join(''); }).join('') : emptyBox('Nothing booked yet.')) +
+      (past.length ? '<p class="day" style="color:#59606a">Earlier</p>' + past.slice(0, 8).map(function (r) { return '<div class="row"><span>' + esc(nice(r.pickup)) + '</span>' + line(r).replace('<div class="row">', '').replace(/<\/div>$/, '') + '</div>'; }).join('') : '');
+
+    var won = rows.filter(function (r) { return r.status === 'Won'; }), lost = rows.filter(function (r) { return r.status === 'Lost'; }), quoted = rows.filter(function (r) { return r.status === 'Quoted'; });
+    var sum = function (list) { return list.reduce(function (t, r) { return t + (Number(r.amount) || 0); }, 0); };
+    var months = [];
+    for (var m = 0; m < 6; m++) { var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - m); months.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')); }
+    $('v-report').innerHTML = '<h2>Sales</h2><p class="hint">Worked out from the statuses and quote amounts on your orders.</p><div class="tiles">' +
+      '<div class="tile big"><b>' + money.format(sum(won)) + '</b><span>Sales (won)</span></div><div class="tile big"><b>' + money.format(sum(quoted)) + '</b><span>Expected (quoted, not decided)</span></div>' +
+      '<div class="tile"><b>' + (won.length ? money.format(sum(won) / won.length) : '–') + '</b><span>Average sale</span></div>' +
+      '<div class="tile"><b>' + rows.length + '</b><span>Orders and requests</span></div><div class="tile"><b>' + open.length + '</b><span>Still open</span></div>' +
+      '<div class="tile"><b>' + (won.length + lost.length ? Math.round(100 * won.length / (won.length + lost.length)) + '%' : '–') + '</b><span>Won, of those decided</span></div></div>' +
+      '<div class="scroll"><table><thead><tr><th>Month</th><th>Requests</th><th>Won</th><th>Sales</th></tr></thead><tbody>' + months.map(function (month) {
+        var inMonth = rows.filter(function (r) { return r.received.slice(0, 7) === month; }), wonIn = inMonth.filter(function (r) { return r.status === 'Won'; });
+        return '<tr><td>' + new Date(month.slice(0, 4), month.slice(5) - 1, 1).toLocaleDateString('en-CA', {month: 'long', year: 'numeric'}) + '</td><td>' + inMonth.length + '</td><td>' + wonIn.length + '</td><td>' + money.format(sum(wonIn)) + '</td></tr>'; }).join('') + '</tbody></table></div>';
+  }
+
+  function show(name) { view = name; ['today', 'requests', 'calendar', 'report'].forEach(function (v) { $('v-' + v).hidden = v !== name; });
+    Array.prototype.forEach.call($('tabs').children, function (b) { b.classList.toggle('on', b.dataset.view === name); }); window.scrollTo(0, 0); }
+
+  function change(id, patch, cardEl) {
+    var row = rows.filter(function (r) { return r.id === id; })[0]; if (!row) return;
+    var before = {}; Object.keys(patch).forEach(function (k) { before[k] = row[k]; row[k] = patch[k]; });
+    var note = function (text, bad) { var el = document.querySelector('.view:not([hidden]) .card[data-id="' + id + '"] .saved'); if (el) { el.textContent = text; el.className = 'saved' + (bad ? ' bad' : ''); } };
+    if ('status' in patch || 'follow_up' in patch || 'pickup' in patch) { var y = window.scrollY; render(); window.scrollTo(0, y); } else if ('amount' in patch) { var keep = window.scrollY; render(); window.scrollTo(0, keep); }
+    if (demo) { note('Saved (demo: nothing is stored)'); return; }
+    api('PATCH', '/requests/' + id, patch).then(function (r) { if (!r.data.success) throw new Error(r.data.error); note('Saved'); })
+      .catch(function () { Object.keys(before).forEach(function (k) { row[k] = before[k]; }); render(); note('Could not save. Check your connection and try again.', true); });
+  }
+
+  document.addEventListener('click', function (event) {
+    var t = event.target, cardEl = t.closest && t.closest('.card');
+    if (t.dataset.status && cardEl) change(Number(cardEl.dataset.id), {status: t.dataset.status}, cardEl);
+    else if (t.dataset.filter) { filter = t.dataset.filter; render(); }
+    else if (t.closest && t.closest('#tabs button')) show(t.closest('#tabs button').dataset.view);
+  });
+  document.addEventListener('change', function (event) {
+    var t = event.target, cardEl = t.closest && t.closest('.card'); if (!cardEl || !t.dataset.field) return;
+    var value = t.value.trim(), patch = {};
+    patch[t.dataset.field] = t.dataset.field === 'amount' ? (value === '' ? null : Math.max(0, Number(value))) : t.dataset.field === 'notes' ? value : (value || null);
+    change(Number(cardEl.dataset.id), patch, cardEl);
+  });
+  document.addEventListener('input', function (event) { if (event.target.id === 'search') { query = event.target.value.trim().toLowerCase(); var pos = event.target.selectionStart; render(); var box = $('search'); box.focus(); box.setSelectionRange(pos, pos); } });
+
+  function enter() { $('gate').hidden = true; ['app', 'tabs', 'add', 'leave'].forEach(function (id) { $(id).hidden = false; }); $('demoBadge').hidden = !demo; $('leave').textContent = demo ? 'Leave demo' : 'Sign out'; render(); show('today'); }
+  function signIn(code, remember) {
+    pass = code; demo = false; $('gateErr').textContent = 'Opening…';
+    return load().then(function () { try { (remember ? localStorage : sessionStorage).setItem('jdl-office', code); } catch (e) {} $('gateErr').textContent = ''; enter(); })
+      .catch(function (error) { pass = ''; try { localStorage.removeItem('jdl-office'); sessionStorage.removeItem('jdl-office'); } catch (e) {} $('gateErr').textContent = error.message === 'passcode' ? 'That passcode is not right.' : 'Could not reach the office. Check your connection.'; });
+  }
+  $('signin').addEventListener('submit', function (event) { event.preventDefault(); signIn($('pass').value.trim(), $('keep').checked); });
+  $('tryDemo').addEventListener('click', function () { demo = true; rows = sample(); enter(); });
+  $('leave').addEventListener('click', function () { try { localStorage.removeItem('jdl-office'); sessionStorage.removeItem('jdl-office'); } catch (e) {} location.replace(location.pathname); });
+  $('add').addEventListener('click', function () { $('orderForm').reset(); $('orderErr').textContent = ''; $('newOrder').showModal(); });
+  $('cancelOrder').addEventListener('click', function () { $('newOrder').close(); });
+  $('orderForm').addEventListener('submit', function (event) {
+    event.preventDefault(); var f = event.target.elements, order = {};
+    ['name', 'phone', 'need', 'quantity', 'size', 'message'].forEach(function (k) { order[k] = f[k].value.trim(); });
+    if (!order.name) { $('orderErr').textContent = 'Please enter the customer name.'; return; }
+    var done = function (id) { rows.unshift({id: id, kind: 'manual', received: day() + ' 00:00', need: order.need, quantity: order.quantity, size: order.size, name: order.name, phone: order.phone, message: order.message, status: 'New', amount: null, follow_up: null, pickup: null, notes: ''}); $('newOrder').close(); render(); show('today'); };
+    if (demo) { done(Math.max.apply(null, rows.map(function (r) { return r.id; }).concat(0)) + 1); return; }
+    api('POST', '/requests', order).then(function (r) { if (!r.data.success) throw new Error(); done(r.data.id); }).catch(function () { $('orderErr').textContent = 'Could not save. Check your connection and try again.'; });
+  });
+
+  var stored = null; try { stored = sessionStorage.getItem('jdl-office') || localStorage.getItem('jdl-office'); } catch (e) {}
+  if (/[?&]demo\b/.test(location.search)) { demo = true; rows = sample(); enter(); }
+  else if (stored) signIn(stored, !!(function () { try { return localStorage.getItem('jdl-office'); } catch (e) { return null; } })());
+})();
+</script>
+</body>
+</html>
