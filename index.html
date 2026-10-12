@@ -80,7 +80,7 @@ footer.site{background:#111614;color:#aab5ad;font-size:14px;text-align:center;pa
 </style>
 </head>
 <body>
-<div class="draft">Website preview for JDL Pallet Recycling · not live yet · the quote form does not send yet</div>
+<div class="draft">Website preview for JDL Pallet Recycling · not live yet · the quote form is in testing</div>
 <header><div class="wrap">
   <a class="brand" href="#top">
     <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 16 A34 34 0 1 1 19.98 34.04" fill="none" stroke="#1d4a31" stroke-width="8" stroke-linecap="round"/><path d="M29.1 21.2 L28.5 39.3 L11.4 31.3Z" fill="#1d4a31"/>
@@ -174,7 +174,7 @@ footer.site{background:#111614;color:#aab5ad;font-size:14px;text-align:center;pa
 <script>
 // Quote form. FORM_KEY is the public access key of the form-to-email service; while it is empty the page stays a preview and sends nothing.
 (function () {
-  var FORM_ENDPOINT = 'https://api.web3forms.com/submit', FORM_KEY = '';
+  var FORM_ENDPOINT = 'https://api.web3forms.com/submit', FORM_KEY = 'f5ba5486-293a-441f-8e4f-3398f2000e14';
   var form = document.getElementById('quote'), status = form.querySelector('.status'), button = form.querySelector('button');
   function say(text, kind) { status.textContent = text; status.className = 'status' + (kind ? ' ' + kind : ''); }
   form.addEventListener('submit', function (event) {
