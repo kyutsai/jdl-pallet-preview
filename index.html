@@ -54,7 +54,7 @@ form{background:#fff;color:var(--ink);border-radius:14px;padding:24px}
 label{display:block;font-size:13px;font-weight:700;margin:11px 0 4px}
 input,select,textarea{width:100%;font:inherit;padding:10px 11px;border:1px solid #bfc5b9;border-radius:8px;background:#fff}textarea{min-height:76px}
 .row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-form button{width:100%;margin-top:14px;cursor:pointer;font:inherit;font-weight:800}form small{display:block;color:var(--soft);margin-top:9px;font-size:13px}
+form button{width:100%;margin-top:14px;cursor:pointer;font:inherit;font-weight:800}form button:disabled{opacity:.6;cursor:progress}form .status{margin:10px 0 0;font-size:14px;color:var(--soft)}form .status.ok{color:#17805a;font-weight:700}form .status.bad{color:#b3261e;font-weight:700}form .fine{margin:6px 0 0;font-size:12px;color:var(--soft)}form .invalid{border-color:#b3261e;outline:2px solid #f3c1bd}
 footer.site{background:#111614;color:#aab5ad;font-size:14px;text-align:center;padding:22px 0}
 .callbar{display:none}
 @media (max-width:860px){
@@ -151,23 +151,58 @@ footer.site{background:#111614;color:#aab5ad;font-size:14px;text-align:center;pa
       <dt>Yard</dt><dd>2505 Ferrier St<br>Winnipeg, MB R2V 4P4<br><a href="https://www.google.com/maps/search/?api=1&query=2505+Ferrier+St+Winnipeg+MB" style="font-size:1rem">Open in Google Maps</a></dd>
     </dl>
   </div>
-  <form onsubmit="event.preventDefault();this.querySelector('small').textContent='This is a preview: the form is not connected yet.'">
+  <form id="quote" novalidate>
     <h3>Request a price</h3>
     <label for="need">What do you need?</label>
-    <select id="need"><option>Recycled pallets</option><option>A custom size built</option><option>My pallets repaired</option><option>I have used pallets to pass on</option></select>
+    <select id="need" name="need"><option>Recycled pallets</option><option>A custom size built</option><option>My pallets repaired</option><option>I have used pallets to pass on</option></select>
     <div class="row">
-      <div><label for="count">How many?</label><input id="count" inputmode="numeric" placeholder="e.g. 40"></div>
-      <div><label for="size">Size</label><select id="size"><option>48 x 40 (standard)</option><option>Mixed sizes</option><option>Other / not sure</option></select></div>
+      <div><label for="count">How many?</label><input id="count" name="quantity" inputmode="numeric" maxlength="12" placeholder="e.g. 40"></div>
+      <div><label for="size">Size</label><select id="size" name="size"><option>48 x 40 (standard)</option><option>Mixed sizes</option><option>Other / not sure</option></select></div>
     </div>
-    <label for="name">Your name</label><input id="name" autocomplete="name" required>
-    <label for="phone">Phone number</label><input id="phone" type="tel" autocomplete="tel" required>
-    <label for="more">Anything else?</label><textarea id="more" placeholder="What the pallets will carry, how soon you need them…"></textarea>
+    <label for="name">Your name</label><input id="name" name="name" autocomplete="name" maxlength="80" required>
+    <label for="phone">Phone number</label><input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="24" required>
+    <label for="more">Anything else?</label><textarea id="more" name="message" maxlength="1500" placeholder="What the pallets will carry, how soon you need them…"></textarea>
+    <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
     <button class="btn" type="submit">Send request</button>
-    <small>We reply by phone.</small>
+    <p class="status" role="status" aria-live="polite">We reply by phone.</p>
+    <p class="fine">We use your name and number only to answer this request. We don't share them or add you to any list.</p>
   </form>
 </div></section>
 
 <footer class="site"><div class="wrap">JDL Pallet Recycling · 2505 Ferrier St, Winnipeg, MB R2V 4P4 · 431-279-0220 · jdlpalletrecycling@outlook.com</div></footer>
 <div class="callbar"><a href="tel:+14312790220">Call</a><a href="#contact">Get a price</a></div>
+<script>
+// Quote form. FORM_KEY is the public access key of the form-to-email service; while it is empty the page stays a preview and sends nothing.
+(function () {
+  var FORM_ENDPOINT = 'https://api.web3forms.com/submit', FORM_KEY = '';
+  var form = document.getElementById('quote'), status = form.querySelector('.status'), button = form.querySelector('button');
+  function say(text, kind) { status.textContent = text; status.className = 'status' + (kind ? ' ' + kind : ''); }
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    var data = {}, bad = null;
+    Array.prototype.forEach.call(form.elements, function (field) {
+      if (!field.name) return;
+      field.classList.remove('invalid');
+      data[field.name] = field.type === 'checkbox' ? field.checked : field.value.trim();
+    });
+    if (!data.name) bad = form.elements.name;
+    else if (data.phone.replace(/\D/g, '').length < 10) bad = form.elements.phone;
+    if (bad) { bad.classList.add('invalid'); bad.focus(); say(bad.name === 'phone' ? 'Please enter a phone number with area code.' : 'Please enter your name.', 'bad'); return; }
+    if (data.botcheck) { say('Thanks. We will call you back.', 'ok'); form.reset(); return; }   // a filled hidden box means a bot: pretend, send nothing
+    if (!FORM_KEY) { say('This is a preview: the form is not connected yet.'); return; }
+    delete data.botcheck;
+    data.access_key = FORM_KEY; data.subject = 'Quote request: ' + data.need + (data.quantity ? ' x ' + data.quantity : ''); data.from_name = 'JDL website';
+    button.disabled = true; say('Sending…');
+    fetch(FORM_ENDPOINT, {method: 'POST', headers: {'Content-Type': 'application/json', 'Accept': 'application/json'}, body: JSON.stringify(data)})
+      .then(function (response) { return response.json().then(function (body) { return response.ok && body.success; }); })
+      .then(function (sent) {
+        button.disabled = false;
+        if (sent) { form.reset(); say('Thanks. Your request is in, and we will call you back.', 'ok'); }
+        else say('Sorry, that did not send. Please call 431-279-0220.', 'bad');
+      })
+      .catch(function () { button.disabled = false; say('Sorry, that did not send. Please call 431-279-0220.', 'bad'); });
+  });
+})();
+</script>
 </body>
 </html>
