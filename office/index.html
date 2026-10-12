@@ -79,11 +79,12 @@ td.l,th.l{text-align:left}
 </style>
 </head>
 <body>
-<div class="top"><div class="wrap"><h1>JDL Office<small>Pallet Recycling · Winnipeg</small></h1><span class="badge" id="demoBadge" hidden>Demo</span><button class="link" id="leave" hidden>Sign out</button></div></div>
+<div class="top"><div class="wrap"><h1>JDL Office<small>Pallet Recycling · Winnipeg</small></h1><span class="badge" id="demoBadge" hidden>Demo</span><span id="whoami" style="font-size:13px;color:#cfdcd3" hidden></span><button class="link" id="changePass" hidden>Password</button><button class="link" id="leave" hidden>Sign out</button></div></div>
 
 <div class="gate" id="gate"><div class="box">
-  <h2>Sign in</h2><p>Enter the office passcode to see your requests and orders.</p>
-  <form id="signin"><label>Passcode<input id="pass" type="password" autocomplete="current-password" required></label>
+  <h2>Sign in</h2><p>Enter your user ID and password to see your requests and orders.</p>
+  <form id="signin"><label>User ID<input id="user" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+  <label style="margin-top:10px">Password<input id="pass" type="password" autocomplete="current-password" required></label>
   <label class="keep"><input type="checkbox" id="keep"> Stay signed in on this device</label>
   <button class="btn" type="submit">Open the office</button><p class="err" id="gateErr" role="alert"></p></form>
   <p class="or">or</p><button class="btn alt" id="tryDemo" type="button">Look around with made-up customers</button>
@@ -100,6 +101,15 @@ td.l,th.l{text-align:left}
   <button data-view="today" class="on"><i id="n-today">0</i>To do</button><button data-view="requests"><i id="n-requests">0</i>All orders</button>
   <button data-view="calendar"><i id="n-calendar">0</i>Calendar</button><button data-view="report"><i>$</i>Reports</button>
 </nav>
+
+<dialog id="passBox"><form method="dialog" id="passForm">
+  <h2>Change your password</h2>
+  <label>Current password<input name="current" type="password" autocomplete="current-password" required></label>
+  <label>New password (10 characters or more)<input name="next" type="password" autocomplete="new-password" minlength="10" required></label>
+  <label>New password again<input name="again" type="password" autocomplete="new-password" minlength="10" required></label>
+  <p class="err" id="passErr" role="alert"></p>
+  <div class="acts"><button class="btn alt" type="button" id="cancelPass">Cancel</button><button class="btn" type="submit">Change password</button></div>
+</form></dialog>
 
 <dialog id="newOrder"><form method="dialog" id="orderForm">
   <h2>Add a phone or walk-in order</h2>
@@ -119,7 +129,7 @@ td.l,th.l{text-align:left}
   var STATUSES = ['New', 'Called', 'Quoted', 'Won', 'Lost'], OPEN = ['New', 'Called', 'Quoted'];
   var REASONS = {Won: ['Good price', 'Fast service', 'Had the size they needed', 'Repeat customer', 'Referral', 'Other'],
                  Lost: ['Price too high', 'Went with someone else', 'Too slow', 'Did not have the size', 'Could not reach them', 'Other']};
-  var rows = [], demo = false, pass = '', view = 'today', filter = 'Open', query = '', period = 'month', from = '', to = '';
+  var rows = [], demo = false, pass = '', me = '', view = 'today', filter = 'Open', query = '', period = 'month', from = '', to = '';
   var $ = function (id) { return document.getElementById(id); };
   var money = new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD', maximumFractionDigits: 0});
   function esc(text) { return String(text == null ? '' : text).replace(/[&<>"']/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]; }); }
@@ -150,7 +160,8 @@ td.l,th.l{text-align:left}
     return fetch(API + path, {method: method, headers: {'Authorization': 'Bearer ' + pass, 'Content-Type': 'application/json'}, body: body ? JSON.stringify(body) : undefined})
       .then(function (response) { return response.json().then(function (data) { return {status: response.status, data: data}; }); });
   }
-  function load() { return demo ? Promise.resolve() : api('GET', '/requests').then(function (r) { if (r.status === 401) throw new Error('passcode'); if (!r.data.success) throw new Error('load'); rows = r.data.requests; }); }
+  function load() { return demo ? Promise.resolve() : api('GET', '/requests').then(function (r) { if (r.status === 401) throw new Error('signin'); if (!r.data.success) throw new Error('load'); rows = r.data.requests; me = r.data.user ? r.data.user.name : ''; }); }
+  function forget() { try { ['jdl-office', 'jdl-office-keep'].forEach(function (k) { localStorage.removeItem(k); sessionStorage.removeItem(k); }); } catch (e) {} pass = ''; }
 
   function due(row) { return OPEN.indexOf(row.status) < 0 ? 9 : !row.follow_up ? 2 : row.follow_up < day() ? 0 : row.follow_up === day() ? 1 : 3; }
   function card(row) {
@@ -259,7 +270,7 @@ td.l,th.l{text-align:left}
     var note = function (text, bad) { var el = document.querySelector('.view:not([hidden]) .card[data-id="' + id + '"] .saved'); if (el) { el.textContent = text; el.className = 'saved' + (bad ? ' bad' : ''); } };
     if ('status' in patch || 'follow_up' in patch || 'pickup' in patch || 'reason' in patch) { var y = window.scrollY; render(); window.scrollTo(0, y); } else if ('amount' in patch) { var keep = window.scrollY; render(); window.scrollTo(0, keep); }
     if (demo) { note('Saved (demo: nothing is stored)'); return; }
-    api('PATCH', '/requests/' + id, patch).then(function (r) { if (!r.data.success) throw new Error(r.data.error); note('Saved'); })
+    api('PATCH', '/requests/' + id, patch).then(function (r) { if (r.status === 401) { forget(); location.reload(); return; } if (!r.data.success) throw new Error(r.data.error); note('Saved'); })
       .catch(function () { Object.keys(before).forEach(function (k) { row[k] = before[k]; }); render(); note('Could not save. Check your connection and try again.', true); });
   }
 
@@ -282,15 +293,39 @@ td.l,th.l{text-align:left}
   });
   document.addEventListener('input', function (event) { if (event.target.id === 'search') { query = event.target.value.trim().toLowerCase(); var pos = event.target.selectionStart; render(); var box = $('search'); box.focus(); box.setSelectionRange(pos, pos); } });
 
-  function enter() { $('gate').hidden = true; ['app', 'tabs', 'add', 'leave'].forEach(function (id) { $(id).hidden = false; }); $('demoBadge').hidden = !demo; $('leave').textContent = demo ? 'Leave demo' : 'Sign out'; render(); show('today'); }
-  function signIn(code, remember) {
-    pass = code; demo = false; $('gateErr').textContent = 'Opening…';
-    return load().then(function () { try { (remember ? localStorage : sessionStorage).setItem('jdl-office', code); } catch (e) {} $('gateErr').textContent = ''; enter(); })
-      .catch(function (error) { pass = ''; try { localStorage.removeItem('jdl-office'); sessionStorage.removeItem('jdl-office'); } catch (e) {} $('gateErr').textContent = error.message === 'passcode' ? 'That passcode is not right.' : 'Could not reach the office. Check your connection.'; });
+  function enter() { $('gate').hidden = true; ['app', 'tabs', 'add', 'leave'].forEach(function (id) { $(id).hidden = false; }); $('demoBadge').hidden = !demo; $('leave').textContent = demo ? 'Leave demo' : 'Sign out';
+    $('whoami').hidden = demo || !me; $('whoami').textContent = me; $('changePass').hidden = demo; show('today'); }
+  // Opens the office with a sign-in token already held (after signing in, or when coming back to the page).
+  function open(token, remember) {
+    pass = token; demo = false;
+    return load().then(function () { try { (remember ? localStorage : sessionStorage).setItem('jdl-office', token); } catch (e) {} $('gateErr').textContent = ''; enter(); });
   }
-  $('signin').addEventListener('submit', function (event) { event.preventDefault(); signIn($('pass').value.trim(), $('keep').checked); });
+  $('signin').addEventListener('submit', function (event) {
+    event.preventDefault(); var remember = $('keep').checked; $('gateErr').textContent = 'Signing in…';
+    fetch(API + '/login', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: $('user').value, password: $('pass').value, remember: remember})})
+      .then(function (response) { return response.json().then(function (data) { return {status: response.status, data: data}; }); })
+      .then(function (r) {
+        if (r.status === 429) { $('gateErr').textContent = 'Too many wrong tries. Wait 15 minutes, or ask for a password reset.'; return; }
+        if (!r.data.success) { $('gateErr').textContent = 'That user ID or password is not right.'; return; }
+        $('pass').value = ''; return open(r.data.token, remember);
+      }).catch(function () { $('gateErr').textContent = 'Could not reach the office. Check your connection.'; });
+  });
   $('tryDemo').addEventListener('click', function () { demo = true; rows = sample(); enter(); });
-  $('leave').addEventListener('click', function () { try { localStorage.removeItem('jdl-office'); sessionStorage.removeItem('jdl-office'); } catch (e) {} location.replace(location.pathname); });
+  $('leave').addEventListener('click', function () {
+    var done = function () { forget(); location.replace(location.pathname); };
+    if (demo || !pass) done(); else api('POST', '/logout').then(done, done);
+  });
+  $('changePass').addEventListener('click', function () { $('passForm').reset(); $('passErr').textContent = ''; $('passBox').showModal(); });
+  $('cancelPass').addEventListener('click', function () { $('passBox').close(); });
+  $('passForm').addEventListener('submit', function (event) {
+    event.preventDefault(); var f = event.target.elements, err = $('passErr');
+    if (f.next.value.length < 10) { err.textContent = 'The new password needs 10 characters or more.'; return; }
+    if (f.next.value !== f.again.value) { err.textContent = 'The two new passwords do not match.'; return; }
+    api('POST', '/password', {current: f.current.value, next: f.next.value}).then(function (r) {
+      if (r.data.success) { $('passBox').close(); alert('Your password has been changed.'); }
+      else err.textContent = r.data.error === 'current' ? 'The current password is not right.' : 'Could not change the password. Try again.';
+    }).catch(function () { err.textContent = 'Could not reach the office. Check your connection.'; });
+  });
   $('add').addEventListener('click', function () { $('orderForm').reset(); $('orderErr').textContent = ''; $('newOrder').showModal(); });
   $('cancelOrder').addEventListener('click', function () { $('newOrder').close(); });
   $('orderForm').addEventListener('submit', function (event) {
@@ -302,9 +337,10 @@ td.l,th.l{text-align:left}
     api('POST', '/requests', order).then(function (r) { if (!r.data.success) throw new Error(); done(r.data.id); }).catch(function () { $('orderErr').textContent = 'Could not save. Check your connection and try again.'; });
   });
 
-  var stored = null; try { stored = sessionStorage.getItem('jdl-office') || localStorage.getItem('jdl-office'); } catch (e) {}
+  var stored = null, kept = false;
+  try { stored = sessionStorage.getItem('jdl-office'); if (!stored) { stored = localStorage.getItem('jdl-office'); kept = !!stored; } } catch (e) {}
   if (/[?&]demo\b/.test(location.search)) { demo = true; rows = sample(); enter(); }
-  else if (stored) signIn(stored, !!(function () { try { return localStorage.getItem('jdl-office'); } catch (e) { return null; } })());
+  else if (stored) open(stored, kept).catch(function (error) { if (error.message === 'signin') { forget(); $('gateErr').textContent = 'Please sign in again.'; } else $('gateErr').textContent = 'Could not reach the office. Check your connection.'; });
 })();
 </script>
 </body>
