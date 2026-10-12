@@ -35,6 +35,7 @@ main{padding-top:18px}
 label{display:block;font-size:12px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:.05em}
 label input,label select,label textarea{display:block;width:100%;margin-top:3px;padding:9px 10px;border:1px solid #c9c2b2;border-radius:8px;background:#fff;color:var(--ink);text-transform:none;letter-spacing:0;font-weight:400}
 textarea{min-height:58px}.notes{margin-top:8px}
+.why{margin:8px 0 2px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pair .sub{margin-top:14px}
 .saved{display:block;min-height:18px;font-size:13px;color:var(--ok);margin-top:4px}.saved.bad{color:var(--red)}
 .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .filters button{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:700}
@@ -74,7 +75,7 @@ td.l,th.l{text-align:left}
   .printhead{display:block;font:700 15px Arial,sans-serif;margin:0 0 4px}.tile,.tile.big{background:#fff!important;color:#000!important;border:1px solid #999}.tile.big b,.tile.big span{color:#000!important}
   .tiles{grid-template-columns:repeat(4,1fr)}.scroll{border:0;overflow:visible}table{min-width:0}th,td{padding:5px 8px;border-bottom:1px solid #bbb}
 }
-@media (max-width:560px){.fields{grid-template-columns:1fr 1fr}.fields label:first-child{grid-column:1/-1}.tiles{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.pair{grid-template-columns:1fr}.fields{grid-template-columns:1fr 1fr}.fields label:first-child{grid-column:1/-1}.tiles{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -116,6 +117,8 @@ td.l,th.l{text-align:left}
 (function () {
   var API = 'https://jdl-quote-relay.jdl-quote-relay.workers.dev/office/api';
   var STATUSES = ['New', 'Called', 'Quoted', 'Won', 'Lost'], OPEN = ['New', 'Called', 'Quoted'];
+  var REASONS = {Won: ['Good price', 'Fast service', 'Had the size they needed', 'Repeat customer', 'Referral', 'Other'],
+                 Lost: ['Price too high', 'Went with someone else', 'Too slow', 'Did not have the size', 'Could not reach them', 'Other']};
   var rows = [], demo = false, pass = '', view = 'today', filter = 'Open', query = '', period = 'month', from = '', to = '';
   var $ = function (id) { return document.getElementById(id); };
   var money = new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD', maximumFractionDigits: 0});
@@ -126,20 +129,21 @@ td.l,th.l{text-align:left}
   // Made-up customers for the demo. Nothing here is saved or sent anywhere.
   function sample() {
     var list = [
-      ['web', -34, 'Recycled pallets', '60', '48 x 40 (standard)', 'Prairie Feed Co', '204 555 0101', 'Need them by Friday', 'Won', 480, null, -30, 'Picked up, paid'],
-      ['manual', -21, 'Recycled pallets', '100', '48 x 40 (standard)', 'Henderson Farm', '204 555 0111', 'Phone order', 'Won', 1600, null, -18, 'Delivered'],
-      ['web', -23, 'A custom size built', '25', 'Other / not sure', 'Northgate Signs', '204 555 0102', '60 x 30, for sign panels', 'Won', 1250, null, -14, 'Repeat customer'],
-      ['web', -15, 'Recycled pallets', '40', '48 x 40 (standard)', 'Red River Movers', '204 555 0103', '', 'Lost', 300, null, null, 'Went with a cheaper quote'],
+      ['web', -34, 'Recycled pallets', '60', '48 x 40 (standard)', 'Prairie Feed Co', '204 555 0101', 'Need them by Friday', 'Won', 480, null, -30, 'Picked up, paid', 'Fast service'],
+      ['manual', -21, 'Recycled pallets', '100', '48 x 40 (standard)', 'Henderson Farm', '204 555 0111', 'Phone order', 'Won', 1600, null, -18, 'Delivered', 'Referral'],
+      ['web', -23, 'A custom size built', '25', 'Other / not sure', 'Northgate Signs', '204 555 0102', '60 x 30, for sign panels', 'Won', 1250, null, -14, '', 'Had the size they needed'],
+      ['web', -15, 'Recycled pallets', '40', '48 x 40 (standard)', 'Red River Movers', '204 555 0103', '', 'Lost', 300, null, null, '', 'Price too high'],
       ['web', -10, 'Recycled pallets', '80', '48 x 40 (standard)', 'Lakeside Greenhouse', '204 555 0104', 'Monthly order if price is right', 'Quoted', 640, 1, null, 'Call back tomorrow'],
-      ['manual', -6, 'Recycled pallets', '12', '48 x 40 (standard)', 'Walk-in, Mr. Okafor', '204 555 0112', '', 'Won', 220, null, -6, 'Paid cash at the yard'],
+      ['manual', -6, 'Recycled pallets', '12', '48 x 40 (standard)', 'Walk-in, Mr. Okafor', '204 555 0112', '', 'Won', 220, null, -6, 'Paid cash at the yard', 'Good price'],
       ['web', -6, 'A custom size built', '40', 'Other / not sure', 'Keystone Millwork', '204 555 0105', '72 x 48 heavy duty', 'Quoted', 2100, 3, 9, 'Waiting on their manager'],
       ['web', -3, 'My pallets repaired', '30', 'Mixed sizes', 'Portage Hardware', '204 555 0106', 'Broken boards, some cracked', 'Called', null, -1, null, 'Left a voicemail'],
       ['manual', -3, 'A custom size built', '30', 'Other / not sure', 'City Print Shop', '204 555 0113', 'Skids for a new press', 'Quoted', 900, 0, 6, ''],
       ['web', -1, 'Recycled pallets', '20', '48 x 40 (standard)', 'Maple Bakery Supply', '204 555 0107', '', 'New', null, null, null, ''],
+      ['web', -2, 'Recycled pallets', '60', '48 x 40 (standard)', 'Prairie Feed Co', '204 555 0101', 'Same again please', 'Quoted', 480, 2, null, 'Second order'],
       ['web', 0, 'I have used pallets to pass on', '150', 'Mixed sizes', 'Summit Warehousing', '204 555 0108', 'Clearing out a dock', 'New', null, null, null, '']
     ];
     return list.map(function (r, i) { return {id: i + 1, kind: r[0], received: day(r[1]) + ' 09:' + String(10 + i * 3), need: r[2], quantity: r[3], size: r[4], name: r[5], phone: r[6], message: r[7],
-      status: r[8], amount: r[9], follow_up: r[10] == null ? null : day(r[10]), pickup: r[11] == null ? null : day(r[11]), notes: r[12]}; }).reverse();
+      status: r[8], amount: r[9], follow_up: r[10] == null ? null : day(r[10]), pickup: r[11] == null ? null : day(r[11]), notes: r[12], reason: r[13] || null}; }).reverse();
   }
 
   function api(method, path, body) {
@@ -156,6 +160,7 @@ td.l,th.l{text-align:left}
       (row.message ? '<p class="msg">“' + esc(row.message) + '”</p>' : '') +
       '<p class="meta">Received ' + esc(nice(row.received)) + (row.phone ? ' · <a href="tel:' + esc(row.phone.replace(/[^0-9+]/g, '')) + '">Call ' + esc(row.phone) + '</a>' : '') + '</p>' +
       '<div class="status" role="group" aria-label="Status">' + STATUSES.map(function (s) { return '<button type="button" data-status="' + s + '"' + (s === row.status ? ' class="on" aria-pressed="true"' : '') + '>' + s + '</button>'; }).join('') + '</div>' +
+      (REASONS[row.status] ? '<label class="why">Why was it ' + row.status.toLowerCase() + '?<select data-field="reason"><option value="">Choose a reason</option>' + REASONS[row.status].concat(row.reason && REASONS[row.status].indexOf(row.reason) < 0 ? [row.reason] : []).map(function (r) { return '<option' + (r === row.reason ? ' selected' : '') + '>' + esc(r) + '</option>'; }).join('') + '</select></label>' : '') +
       '<div class="fields"><label>Quote ($)<input data-field="amount" type="number" min="0" step="1" inputmode="decimal" value="' + (row.amount == null ? '' : esc(row.amount)) + '"></label>' +
       '<label>Follow up on<input data-field="follow_up" type="date" value="' + esc(row.follow_up || '') + '"></label>' +
       '<label>Pickup / delivery<input data-field="pickup" type="date" value="' + esc(row.pickup || '') + '"></label></div>' +
@@ -189,6 +194,13 @@ td.l,th.l{text-align:left}
     var won = pick(inRange, 'Won'), lost = pick(inRange, 'Lost'), quoted = pick(inRange, 'Quoted'), openIn = inRange.filter(function (r) { return OPEN.indexOf(r.status) >= 0; });
     var sum = function (list) { return list.reduce(function (t, r) { return t + (Number(r.amount) || 0); }, 0); };
     var needs = {}; inRange.forEach(function (r) { (needs[r.need] = needs[r.need] || []).push(r); });
+    var why = function (list) { var count = {}; list.forEach(function (r) { var k = r.reason || 'No reason recorded'; count[k] = (count[k] || 0) + 1; });
+      return Object.keys(count).sort(function (a, b) { return count[b] - count[a] || a.localeCompare(b); }).map(function (k) { return '<tr><td>' + esc(k) + '</td><td>' + count[k] + '</td></tr>'; }).join('') || '<tr><td colspan="2">None in this period.</td></tr>'; };
+    // A customer is recognised by phone number, or by name when no usable number was given. "New" means their first order ever falls in this period.
+    var who = function (r) { var digits = String(r.phone || '').replace(/\D/g, ''); return digits.length >= 7 ? digits : 'name:' + r.name.trim().toLowerCase(); };
+    var firstSeen = {}; rows.forEach(function (r) { var k = who(r); if (!firstSeen[k] || r.id < firstSeen[k]) firstSeen[k] = r.id; });
+    var fresh = inRange.filter(function (r) { return firstSeen[who(r)] === r.id; }), back = inRange.filter(function (r) { return firstSeen[who(r)] !== r.id; });
+    var missed = rows.filter(function (r) { return OPEN.indexOf(r.status) >= 0 && r.follow_up && r.follow_up < day(); }).sort(function (a, b) { return a.follow_up.localeCompare(b.follow_up); });
     var months = [];
     for (var m = 0; m < 6; m++) { var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - m); months.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')); }
     var label = PERIODS[period] + (span[0] || span[1] ? ' (' + (span[0] ? nice(span[0]) : 'start') + ' to ' + (span[1] ? nice(span[1]) : 'today') + ')' : '');
@@ -203,8 +215,14 @@ td.l,th.l{text-align:left}
       '<div class="acts2 noprint"><button class="btn" type="button" id="printReport">Print or save as PDF</button><button class="btn alt" type="button" id="csv">Download spreadsheet</button></div>' +
       '<p class="sub">By what customers needed</p><div class="scroll"><table><thead><tr><th>Need</th><th>Orders</th><th>Won</th><th>Sales</th></tr></thead><tbody>' +
       (Object.keys(needs).length ? Object.keys(needs).sort().map(function (n) { return '<tr><td>' + esc(n) + '</td><td>' + needs[n].length + '</td><td>' + pick(needs[n], 'Won').length + '</td><td>' + money.format(sum(pick(needs[n], 'Won'))) + '</td></tr>'; }).join('') : '<tr><td colspan="4">No orders in this period.</td></tr>') + '</tbody></table></div>' +
-      '<p class="sub">Orders in this period (' + inRange.length + ')</p><div class="scroll"><table><thead><tr><th>Received</th><th class="l">Customer</th><th class="l">Need</th><th>Qty</th><th class="l">Status</th><th>Quote</th><th class="l">Pickup</th></tr></thead><tbody>' +
-      (inRange.length ? inRange.slice().sort(function (a, b) { return a.received.localeCompare(b.received); }).map(function (r) { return '<tr><td>' + esc(r.received.slice(0, 10)) + '</td><td class="l">' + esc(r.name) + '</td><td class="l">' + esc(r.need) + '</td><td>' + esc(r.quantity) + '</td><td class="l">' + esc(r.status) + '</td><td>' + (r.amount == null ? '' : money.format(r.amount)) + '</td><td class="l">' + esc(r.pickup || '') + '</td></tr>'; }).join('') : '<tr><td colspan="7">No orders in this period.</td></tr>') + '</tbody></table></div>' +
+      '<div class="pair"><div><p class="sub">Why we won</p><div class="scroll"><table style="min-width:0"><thead><tr><th>Reason</th><th>Orders</th></tr></thead><tbody>' + why(won) + '</tbody></table></div></div>' +
+      '<div><p class="sub">Why we lost</p><div class="scroll"><table style="min-width:0"><thead><tr><th>Reason</th><th>Orders</th></tr></thead><tbody>' + why(lost) + '</tbody></table></div></div></div>' +
+      '<p class="sub">New and returning customers</p><div class="scroll"><table><thead><tr><th>Customers</th><th>Orders</th><th>Won</th><th>Sales</th></tr></thead><tbody>' +
+      [['New (first order ever)', fresh], ['Returning', back]].map(function (g) { return '<tr><td>' + g[0] + '</td><td>' + g[1].length + '</td><td>' + pick(g[1], 'Won').length + '</td><td>' + money.format(sum(pick(g[1], 'Won'))) + '</td></tr>'; }).join('') + '</tbody></table></div>' +
+      '<p class="sub">Missed follow-ups right now (' + missed.length + ')</p>' + (missed.length ? '<div class="scroll"><table><thead><tr><th>Was due</th><th class="l">Customer</th><th class="l">Phone</th><th class="l">Status</th><th>Quote</th></tr></thead><tbody>' +
+        missed.map(function (r) { return '<tr><td>' + esc(nice(r.follow_up)) + '</td><td class="l">' + esc(r.name) + '</td><td class="l">' + esc(r.phone) + '</td><td class="l">' + esc(r.status) + '</td><td>' + (r.amount == null ? '' : money.format(r.amount)) + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<p class="empty">None. Every follow-up is up to date.</p>') +
+      '<p class="sub">Orders in this period (' + inRange.length + ')</p><div class="scroll"><table><thead><tr><th>Received</th><th class="l">Customer</th><th class="l">Need</th><th>Qty</th><th class="l">Status</th><th class="l">Reason</th><th>Quote</th><th class="l">Pickup</th></tr></thead><tbody>' +
+      (inRange.length ? inRange.slice().sort(function (a, b) { return a.received.localeCompare(b.received); }).map(function (r) { return '<tr><td>' + esc(r.received.slice(0, 10)) + '</td><td class="l">' + esc(r.name) + '</td><td class="l">' + esc(r.need) + '</td><td>' + esc(r.quantity) + '</td><td class="l">' + esc(r.status) + '</td><td class="l">' + esc(REASONS[r.status] ? r.reason || '' : '') + '</td><td>' + (r.amount == null ? '' : money.format(r.amount)) + '</td><td class="l">' + esc(r.pickup || '') + '</td></tr>'; }).join('') : '<tr><td colspan="8">No orders in this period.</td></tr>') + '</tbody></table></div>' +
       '<p class="sub noprint">Last six months</p><div class="scroll noprint"><table><thead><tr><th>Month</th><th>Requests</th><th>Won</th><th>Sales</th></tr></thead><tbody>' + months.map(function (month) {
         var inMonth = rows.filter(function (r) { return r.received.slice(0, 7) === month; }), wonIn = pick(inMonth, 'Won');
         return '<tr><td>' + new Date(month.slice(0, 4), month.slice(5) - 1, 1).toLocaleDateString('en-CA', {month: 'long', year: 'numeric'}) + '</td><td>' + inMonth.length + '</td><td>' + wonIn.length + '</td><td>' + money.format(sum(wonIn)) + '</td></tr>'; }).join('') + '</tbody></table></div>';
@@ -223,9 +241,9 @@ td.l,th.l{text-align:left}
   // One cell of the downloaded spreadsheet. Text typed by a customer must not be read as a formula, so risky first characters get an apostrophe.
   function csvCell(value) { var text = String(value == null ? '' : value).replace(/\r?\n/g, ' '); if (/^[=+\-@\t]/.test(text)) text = "'" + text; return /[",]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text; }
   function download() {
-    var head = ['Received', 'Source', 'Customer', 'Phone', 'Need', 'Quantity', 'Size', 'Status', 'Quote', 'Follow-up', 'Pickup or delivery', 'Notes', 'Customer message'];
+    var head = ['Received', 'Source', 'Customer', 'Phone', 'Need', 'Quantity', 'Size', 'Status', 'Reason won or lost', 'Quote', 'Follow-up', 'Pickup or delivery', 'Notes', 'Customer message'];
     var lines = [head.join(',')].concat(reportRows.slice().sort(function (a, b) { return a.received.localeCompare(b.received); }).map(function (r) {
-      return [r.received, r.kind === 'manual' ? 'Phone or walk-in' : 'Website', r.name, r.phone, r.need, r.quantity, r.size, r.status, r.amount == null ? '' : r.amount, r.follow_up || '', r.pickup || '', r.notes, r.message].map(csvCell).join(','); }));
+      return [r.received, r.kind === 'manual' ? 'Phone or walk-in' : 'Website', r.name, r.phone, r.need, r.quantity, r.size, r.status, REASONS[r.status] ? r.reason || '' : '', r.amount == null ? '' : r.amount, r.follow_up || '', r.pickup || '', r.notes, r.message].map(csvCell).join(','); }));
     var link = document.createElement('a'); link.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\r\n') + '\r\n'], {type: 'text/csv;charset=utf-8'}));
     link.download = 'jdl-orders-' + (periodRange()[0] || 'all') + (periodRange()[1] ? '-to-' + periodRange()[1] : '') + '.csv'; document.body.appendChild(link); link.click(); link.remove();
     window.lastCsv = lines.join('\n');
@@ -258,7 +276,7 @@ td.l,th.l{text-align:left}
     if (t.id === 'from' || t.id === 'to') { if (t.id === 'from') from = t.value; else to = t.value; render(); return; }
     if (!cardEl || !t.dataset.field) return;
     var value = t.value.trim(), patch = {};
-    patch[t.dataset.field] = t.dataset.field === 'amount' ? (value === '' ? null : Math.max(0, Number(value))) : t.dataset.field === 'notes' ? value : (value || null);
+    patch[t.dataset.field] = t.dataset.field === 'amount' ? (value === '' ? null : Math.max(0, Number(value))) : t.dataset.field === 'notes' ? value : (value || null);   // reason, follow_up and pickup: empty means none
     change(Number(cardEl.dataset.id), patch, cardEl);
   });
   document.addEventListener('input', function (event) { if (event.target.id === 'search') { query = event.target.value.trim().toLowerCase(); var pos = event.target.selectionStart; render(); var box = $('search'); box.focus(); box.setSelectionRange(pos, pos); } });
@@ -278,7 +296,7 @@ td.l,th.l{text-align:left}
     event.preventDefault(); var f = event.target.elements, order = {};
     ['name', 'phone', 'need', 'quantity', 'size', 'message'].forEach(function (k) { order[k] = f[k].value.trim(); });
     if (!order.name) { $('orderErr').textContent = 'Please enter the customer name.'; return; }
-    var done = function (id) { rows.unshift({id: id, kind: 'manual', received: day() + ' 00:00', need: order.need, quantity: order.quantity, size: order.size, name: order.name, phone: order.phone, message: order.message, status: 'New', amount: null, follow_up: null, pickup: null, notes: ''}); $('newOrder').close(); render(); show('today'); };
+    var done = function (id) { rows.unshift({id: id, kind: 'manual', received: day() + ' 00:00', need: order.need, quantity: order.quantity, size: order.size, name: order.name, phone: order.phone, message: order.message, status: 'New', amount: null, follow_up: null, pickup: null, notes: '', reason: null}); $('newOrder').close(); render(); show('today'); };
     if (demo) { done(Math.max.apply(null, rows.map(function (r) { return r.id; }).concat(0)) + 1); return; }
     api('POST', '/requests', order).then(function (r) { if (!r.data.success) throw new Error(); done(r.data.id); }).catch(function () { $('orderErr').textContent = 'Could not save. Check your connection and try again.'; });
   });
