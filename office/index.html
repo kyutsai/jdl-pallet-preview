@@ -249,14 +249,15 @@ td.l,th.l{text-align:left}
     window.lastCsv = lines.join('\n');
   }
 
-  function show(name) { view = name; ['today', 'requests', 'calendar', 'report'].forEach(function (v) { $('v-' + v).hidden = v !== name; });
+  function show(name) { view = name; render();   // redraw first, so a screen never shows numbers from before the last change
+    ['today', 'requests', 'calendar', 'report'].forEach(function (v) { $('v-' + v).hidden = v !== name; });
     Array.prototype.forEach.call($('tabs').children, function (b) { b.classList.toggle('on', b.dataset.view === name); }); window.scrollTo(0, 0); }
 
   function change(id, patch, cardEl) {
     var row = rows.filter(function (r) { return r.id === id; })[0]; if (!row) return;
     var before = {}; Object.keys(patch).forEach(function (k) { before[k] = row[k]; row[k] = patch[k]; });
     var note = function (text, bad) { var el = document.querySelector('.view:not([hidden]) .card[data-id="' + id + '"] .saved'); if (el) { el.textContent = text; el.className = 'saved' + (bad ? ' bad' : ''); } };
-    if ('status' in patch || 'follow_up' in patch || 'pickup' in patch) { var y = window.scrollY; render(); window.scrollTo(0, y); } else if ('amount' in patch) { var keep = window.scrollY; render(); window.scrollTo(0, keep); }
+    if ('status' in patch || 'follow_up' in patch || 'pickup' in patch || 'reason' in patch) { var y = window.scrollY; render(); window.scrollTo(0, y); } else if ('amount' in patch) { var keep = window.scrollY; render(); window.scrollTo(0, keep); }
     if (demo) { note('Saved (demo: nothing is stored)'); return; }
     api('PATCH', '/requests/' + id, patch).then(function (r) { if (!r.data.success) throw new Error(r.data.error); note('Saved'); })
       .catch(function () { Object.keys(before).forEach(function (k) { row[k] = before[k]; }); render(); note('Could not save. Check your connection and try again.', true); });
