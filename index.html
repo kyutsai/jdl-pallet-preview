@@ -181,7 +181,7 @@ footer.site{background:#111614;color:#aab5ad;font-size:14px;text-align:center;pa
 // Quote form. Each request goes two ways: by email through the form service (FORM_KEY is its public access key) and to Telegram through our relay.
 // The request counts as sent if either one gets through. With FORM_KEY empty the page stays a preview and sends nothing.
 (function () {
-  var FORM_ENDPOINT = 'https://api.web3forms.com/submit', FORM_KEY = 'f5ba5486-293a-441f-8e4f-3398f2000e14';
+  var FORM_ENDPOINT = 'https://api.web3forms.com/submit', FORM_KEY = '1ab2495a-ee7e-4f9a-80ea-d7d1c2447154';
   var RELAY_ENDPOINT = 'https://jdl-quote-relay.jdl-quote-relay.workers.dev';
   var form = document.getElementById('quote'), status = form.querySelector('.status'), button = form.querySelector('button');
   function say(text, kind) { status.textContent = text; status.className = 'status' + (kind ? ' ' + kind : ''); }
